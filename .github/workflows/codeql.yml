@@ -66,13 +66,13 @@ jobs:
           python-version: '3.11'
 
       # Step 4: Build project
-      - name: Install Node dependencies
-        if: env.project == 'javascript'
-        run: npm install
+      # - name: Install Node dependencies
+      #   if: env.project == 'javascript'
+      #   run: npm install
 
-      - name: Build Node project
-        if: env.project == 'javascript'
-        run: npm run build --if-present
+      # - name: Build Node project
+      #   if: env.project == 'javascript'
+      #   run: npm run build --if-present
 
       - name: Build Maven project
         if: env.project == 'maven'
