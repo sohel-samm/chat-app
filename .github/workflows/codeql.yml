@@ -81,7 +81,8 @@ jobs:
         run: npm install
 
       - run: |
-            npm install @stomp/stompjs ws 
+            npm install stompjs sockjs-client
+            # npm install @stomp/stompjs ws 
             npx update-browserslist-db@latest
 
       - name: Build frontend project
