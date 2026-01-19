@@ -85,22 +85,15 @@ jobs:
             # npm install @stomp/stompjs ws 
             npx update-browserslist-db@latest
 
-      - name: Build frontend project
-        if: env.js_project == 'frontend'
-        run: npm run build
+      # - name: Build frontend project
+      #   if: env.js_project == 'frontend'
+      #   run: npm run build
 
-      - name: Build backend project
-        if: env.js_project == 'backend'
-        run: npm run start --if-present
+      # - name: Build backend project
+      #   if: env.js_project == 'backend'
+      #   run: npm run start --if-present
 
-      # Step 4: Build project
-      # - name: Install Node dependencies
-      #   if: env.project == 'javascript'
-      #   run: npm install
-
-      # - name: Build Node project
-      #   if: env.project == 'javascript'
-      #   run: npm run build --if-present
+    
 
       - name: Build Maven project
         if: env.project == 'maven'
