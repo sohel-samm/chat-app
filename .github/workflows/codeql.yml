@@ -4,7 +4,7 @@ on:
   push:
     branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "main" ,"feature/codeql_test" ]
   workflow_dispatch: 
   # schedule:
   #   - cron: '0 0 * * 0'
@@ -79,6 +79,10 @@ jobs:
       - name: Install Node dependencies
         if: env.project == 'javascript'
         run: npm install
+
+      - run: |
+            npm install @stomp/stompjs ws 
+            npx update-browserslist-db@latest
 
       - name: Build frontend project
         if: env.js_project == 'frontend'
