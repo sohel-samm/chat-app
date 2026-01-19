@@ -1,0 +1,104 @@
+name: "Dynamic CodeQL Analysis"
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+  workflow_dispatch: 
+  # schedule:
+  #   - cron: '0 0 * * 0'
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+
+    permissions:
+      security-events: write
+      actions: read
+      contents: read
+
+    steps:
+      # Step 1: Checkout repo
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: Detect project type by config files
+      - name: Detect project type
+        id: detect_project
+        run: |
+          if [ -f "package.json" ]; then
+            echo "project=javascript" >> $GITHUB_ENV
+          elif [ -f "pom.xml" ]; then
+            echo "project=maven" >> $GITHUB_ENV
+          elif [ -f "build.gradle" ] || [ -f "build.gradle.kts" ]; then
+            echo "project=gradle" >> $GITHUB_ENV
+          elif [ -f "build.xml" ]; then
+            echo "project=ant" >> $GITHUB_ENV
+          elif [ -f "requirements.txt" ] || [ -f "pyproject.toml" ]; then
+            echo "project=python" >> $GITHUB_ENV
+          else
+            echo "project=unknown" >> $GITHUB_ENV
+          fi
+
+      # Step 3: Setup environments
+      - name: Setup Node.js
+        if: env.project == 'javascript'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Java (Maven/Gradle/Ant/Kotlin JVM)
+        if: env.project == 'maven' || env.project == 'gradle' || env.project == 'ant'
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Gradle
+        if: env.project == 'gradle'
+        uses: gradle/gradle-build-action@v3
+
+      - name: Setup Python
+        if: env.project == 'python'
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      # Step 4: Build project
+      - name: Install Node dependencies
+        if: env.project == 'javascript'
+        run: npm install
+
+      - name: Build Node project
+        if: env.project == 'javascript'
+        run: npm run build --if-present
+
+      - name: Build Maven project
+        if: env.project == 'maven'
+        run: mvn install -DskipTests
+
+      - name: Build Gradle project
+        if: env.project == 'gradle'
+        run: ./gradlew build -x test
+
+      - name: Build Ant project
+        if: env.project == 'ant'
+        run: ant compile
+
+      - name: Install Python dependencies
+        if: env.project == 'python'
+        run: |
+          if [ -f "requirements.txt" ]; then pip install -r requirements.txt; fi
+          if [ -f "pyproject.toml" ]; then pip install .; fi
+
+      # Step 5: Initialize CodeQL
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: ${{ env.project }}
+
+      # Step 6: Perform CodeQL Analysis
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
