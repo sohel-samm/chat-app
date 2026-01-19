@@ -65,6 +65,25 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Detect JS project type
+        id: detect_js
+        run: |
+          if grep -q '"react"' package.json || grep -q '"vue"' package.json || grep -q '"@angular/core"' package.json; then
+            echo "js_project=frontend" >> $GITHUB_ENV
+          elif grep -q '"express"' package.json || grep -q '"koa"' package.json || grep -q '"nestjs"' package.json; then
+            echo "js_project=backend" >> $GITHUB_ENV
+          else
+            echo "js_project=unknown" >> $GITHUB_ENV
+          fi
+
+      - name: Build frontend project
+        if: env.js_project == 'frontend'
+        run: npm run build
+
+      - name: Build backend project
+        if: env.js_project == 'backend'
+        run: npm run start --if-present
+
       # Step 4: Build project
       # - name: Install Node dependencies
       #   if: env.project == 'javascript'
