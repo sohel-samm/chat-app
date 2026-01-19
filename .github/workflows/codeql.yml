@@ -76,6 +76,10 @@ jobs:
             echo "js_project=unknown" >> $GITHUB_ENV
           fi
 
+      - name: Install Node dependencies
+        if: env.project == 'javascript'
+        run: npm install
+
       - name: Build frontend project
         if: env.js_project == 'frontend'
         run: npm run build
